@@ -1,0 +1,40 @@
+# Docker related files
+.docker/
+docker-compose.override.yml
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Secrets
+*.pem
+*.key
+*.crt
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubectl config
+.kube/
+
+# Minikube
+minikube/
+
+# Ignore GitHub Actions logs
+.github/workflows/*.log
+
+# Ignore IDE specific files
+.idea/
+.vscode/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore all yaml files in kubernetes directory except deployment and service files
+k8s/*
+!k8s/deployment.yaml
+!k8s/service.yaml
