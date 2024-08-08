@@ -13,7 +13,6 @@ variable "instance_type" {
 variable "local_ip" {
   description = "IP address to allow SSH access from"
   type        = string
-  default     = "154.161.131.148/32"
 }
 
 variable "key_name" {

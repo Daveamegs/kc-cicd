@@ -4,8 +4,8 @@ FROM python:3
 # Set the working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy contents from the app directory into the container at /app
+COPY app/ /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt

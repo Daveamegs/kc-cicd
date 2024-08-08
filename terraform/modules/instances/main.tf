@@ -6,7 +6,7 @@ resource "aws_instance" "public_instance" {
   associate_public_ip_address = true
   key_name                    = var.key_name
 
-  user_data = file("${path.module}/scripts/install_nginx.sh")
+  user_data = file("${path.module}/scripts/install_minikube.sh")
 
   tags = {
     Name = var.public_instance_name

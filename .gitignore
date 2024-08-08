@@ -12,9 +12,12 @@ __pycache__/
 *.crt
 
 # Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/.terraform/
+terraform/.terraform*
+terraform/terraform.tfvars
+terraform/tfplan*
 
 # Kubectl config
 .kube/
