@@ -19,14 +19,3 @@ variable "public_nacl_name" {
   default     = "KCPublicNACL"
 
 }
-
-# variable "private_subnet_id" {
-#   description = "Private subnet ID"
-#   type        = string
-# }
-
-# variable "private_nacl_name" {
-#   description = "Name of the private NACL"
-#   type        = string
-#   default     = "KCPrivateNACL"
-# }

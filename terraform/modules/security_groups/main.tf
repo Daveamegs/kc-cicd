@@ -35,28 +35,3 @@ resource "aws_security_group" "public" {
     Name = "PublicSecurityGroup"
   }
 }
-
-# resource "aws_security_group" "private" {
-#   name        = var.private_sg_name
-#   description = "Security group for private instances"
-#   vpc_id      = var.vpc_id
-
-#   ingress {
-#     from_port       = 5432
-#     to_port         = 5432
-#     protocol        = "tcp"
-#     security_groups = [aws_security_group.public.id]
-#   }
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = [var.internet_cidr_block]
-#   }
-
-#   tags = {
-#     Name = "PrivateSecurityGroup"
-#   }
-# }
-

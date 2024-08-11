@@ -13,34 +13,23 @@ variable "public_subnet_id" {
   type        = string
 }
 
-# variable "private_subnet_id" {
-#   description = "Private subnet ID"
-#   type        = string
-# }
+variable "private_ssh_key_path" {
+  description = "Path to private ssh key pair"
+  type        = string
+}
 
 variable "public_sg_id" {
   description = "Public security group ID"
   type        = string
 }
 
-# variable "private_sg_id" {
-#   description = "Private security group ID"
-#   type        = string
-# }
-
 variable "public_instance_name" {
   description = "Public instance name"
-  type = string
-  default = "KCWebServer"
+  type        = string
+  default     = "KCWebServer"
 }
-
-# variable "private_instance_name" {
-#   description = "Private instance name"
-#   type = string
-#   default = "KCDBServer"
-# }
 
 variable "key_name" {
   description = "Key pair name"
-  type = string
+  type        = string
 }

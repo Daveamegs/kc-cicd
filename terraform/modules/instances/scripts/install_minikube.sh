@@ -1,5 +1,5 @@
+# Ubuntu 
 #!/bin/bash
-
 # Update the system
 sudo apt-get update -y
 
@@ -28,6 +28,44 @@ sudo minikube start --driver=none
 # Ensure Minikube uses Docker as the driver
 sudo minikube config set driver none
 
+# Verify installation
+minikube status
+kubectl get nodes
+
+
+#________________________________________________________________________
+
+
+# AMAZON LINUX 2 INSTANCE SCRIPTS
+#!/bin/bash
+
+# # Update the system
+# sudo yum update -y
+
+# # Install Docker
+# sudo amazon-linux-extras install docker -y
+# sudo service docker start
+# sudo usermod -a -G docker ec2-user
+# newgrp docker
+
+# # Install Kubectl
+# curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+# chmod +x ./kubectl
+# sudo mv ./kubectl /usr/local/bin/kubectl
+
+# # Install Minikube
+# curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+# chmod +x minikube
+# sudo mv minikube /usr/local/bin/
+
+# # Start Minikube
+# minikube start --driver=none
+
+# # Ensure Minikube uses Docker as the driver
+# minikube config set driver none
+
 # # Verify installation
 # minikube status
 # kubectl get nodes
+
+

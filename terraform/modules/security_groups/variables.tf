@@ -18,9 +18,3 @@ variable "public_sg_name" {
   type        = string
   default     = "PublicSG"
 }
-
-# variable "private_sg_name" {
-#   description = "Name of private security group"
-#   type        = string
-#   default     = "PrivateSG"
-# }

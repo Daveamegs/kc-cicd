@@ -11,17 +11,24 @@ resource "aws_instance" "public_instance" {
   tags = {
     Name = var.public_instance_name
   }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/install_minikube.sh"
+    destination = "/tmp/install_minikube.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install_minikube.sh",
+      "/tmp/install_minikube.sh"
+    ]
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file(var.private_ssh_key_path)
+    host        = self.public_ip
+  }
+
 }
-
-# resource "aws_instance" "private_instance" {
-#   ami                    = var.ami
-#   instance_type          = var.instance_type
-#   subnet_id              = var.private_subnet_id
-#   vpc_security_group_ids = [var.private_sg_id]
-
-#   user_data = file("${path.module}/scripts/install_postgresql.sh")
-
-#   tags = {
-#     Name = var.private_instance_name
-#   }
-# }

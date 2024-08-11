@@ -24,14 +24,3 @@ variable "public_route_table_name" {
   type        = string
   default     = "PublicRouteTable"
 }
-
-# variable "private_subnet_id" {
-#   description = "Private subnet ID"
-#   type        = string
-# }
-
-# variable "private_route_table_name" {
-#   description = "Name of private route table"
-#   type        = string
-#   default     = "PrivateRouteTable"
-# }

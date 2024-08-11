@@ -44,17 +44,18 @@ module "security_groups" {
 }
 
 module "nacls" {
-  source            = "./modules/nacls"
-  vpc_id            = module.vpc.vpc_id
-  public_subnet_id  = module.subnet.public_subnet_id
-  local_ip          = var.local_ip
+  source           = "./modules/nacls"
+  vpc_id           = module.vpc.vpc_id
+  public_subnet_id = module.subnet.public_subnet_id
+  local_ip         = var.local_ip
 }
 
 module "instances" {
-  source            = "./modules/instances"
-  ami               = var.ami
-  instance_type     = var.instance_type
-  public_subnet_id  = module.subnet.public_subnet_id
-  public_sg_id      = module.security_groups.public_sg_id
-  key_name          = var.key_name
+  source               = "./modules/instances"
+  ami                  = var.ami
+  instance_type        = var.instance_type
+  public_subnet_id     = module.subnet.public_subnet_id
+  public_sg_id         = module.security_groups.public_sg_id
+  key_name             = var.key_name
+  private_ssh_key_path = var.private_ssh_key_path
 }
