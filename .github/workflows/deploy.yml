@@ -28,22 +28,13 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest
 
       - name: Deploy to Kubernetes
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.INSTANCE_PUBLIC_IP }}
-          username: ${{ secrets.INSTANCE_USERNAME }}
-          key: ${{ secrets.SSH_PEM_KEY }}
-          script: |
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
-
-        # env:
-        #   INSTANCE_PUBLIC_IP: ${{ secrets.INSTANCE_PUBLIC_IP }}
-        #   SSH_PEM_KEY: ${{ secrets.SSH_PEM_KEY }}
-        # run: |
-        #   echo "${SSH_PEM_KEY}" > ssh_key_pair.pem
-        #   chmod 600 ssh_key_pair.pem
-        #   ssh -o StrictHostKeyChecking=no -i ssh_key_pair.pem ubuntu@${INSTANCE_PUBLIC_IP} << "EOF"
-        #     kubectl apply -f k8s/deployment.yaml
-        #     kubectl apply -f k8s/service.yaml
-        # EOF
+        env:
+          INSTANCE_PUBLIC_IP: ${{ secrets.INSTANCE_PUBLIC_IP }}
+          SSH_PEM_KEY: ${{ secrets.SSH_PEM_KEY }}
+        run: |
+          echo "${SSH_PEM_KEY}" > ssh_key_pair.pem
+          chmod 600 ssh_key_pair.pem
+          ssh -o StrictHostKeyChecking=no -i ssh_key_pair.pem ubuntu@${INSTANCE_PUBLIC_IP} << "EOF"
+            kubectl apply -f ../../../k8s/deployment.yaml
+            kubectl apply -f ../../../k8s/service.yaml
+          EOF
