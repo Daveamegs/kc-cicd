@@ -27,9 +27,6 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest
 
-      - name: Copy Kubernetes manifests files
-        run: scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PEM_KEY }} k8s/deployment.yaml ubuntu@${{ secrets.INSTANCE_PUBLIC_IP }}
-
       - name: Deploy to Kubernetes
         uses: appleboy/ssh-action@v0.1.6
         with:
