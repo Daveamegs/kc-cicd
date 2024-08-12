@@ -17,11 +17,16 @@ Below are the things you need to have installed and available already.
 
 ## STEP 1 - CREATE GITHUB REPOSITORY
 
-Logged in to github and created a repository, called it kc-cicd and cloned the repo locally unto my workspace.
+Logged in to github and created a repository, named it kc-cicd and cloned the repo locally unto my workspace using ssh.
+
+```bash
+git clone
+```
 
 ## STEP 2 - ADD APPLICATION CODE
 
 Added python application code I created for the previous task. The app was built with flask.
+
 `app/app.py`
 
 ```bash
@@ -45,6 +50,7 @@ if __name__ == "__main__":
 ## STEP 3 - CREATE KUBERNETES MANIFESTS
 
 I created the kubernetes manifest files, `deployment.yaml` and `service.yaml`.
+
 `k8s/deployment.yaml`
 
 ```bash
@@ -104,447 +110,451 @@ Created an empty github actions workflows manifest file called `deploy.yml`.
 
 After I created the Terraform modules.
 
-`terraform/modules/vpc/main.tf`
+- VPC MODULE
+  `terraform/modules/vpc/main.tf`
 
-```bash
-resource "aws_vpc" "vpc" {
-  cidr_block = var.vpc_cidr_block
+  ```bash
+  resource "aws_vpc" "vpc" {
+    cidr_block = var.vpc_cidr_block
 
-  tags = {
-    Name = var.vpc_name
-  }
-}
-
-```
-
-`terraform/modules/vpc/variables.tf`
-
-```bash
-variable "vpc_name" {
-  description = "Name of the VPC"
-  type        = string
-  default     = "KCVPC"
-}
-
-variable "vpc_cidr_block" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-```
-
-`terraform/modules/vpc/outputs.tf`
-
-```bash
-output "vpc_id" {
-  value = aws_vpc.vpc.id
-}
-
-output "vpc_cidr_block" {
-  value = var.vpc_cidr_block
-}
-
-```
-
-`terraform/modules/subnets/main.tf`
-
-```bash
-resource "aws_subnet" "public" {
-  vpc_id                  = var.vpc_id
-  cidr_block              = var.public_cidr_block
-  availability_zone       = var.public_availability_zone
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = var.public_subnet_name
-  }
-}
-
-```
-
-`terraform/modules/subnets/variables.tf`
-
-```bash
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
-}
-
-variable "public_subnet_name" {
-  description = "Name of the public subnet"
-  type        = string
-  default     = "PublicSubnet"
-}
-
-variable "public_cidr_block" {
-  description = "CIDR block for the public subnet"
-  type        = string
-  default     = "10.0.1.0/24"
-}
-
-variable "public_availability_zone" {
-  description = "Availability zone for the public subnet"
-  type        = string
-  default = "eu-west-1a"
-}
-
-```
-
-`terraform/modules/subnets/outputs.tf`
-
-```bash
-output "public_subnet_id" {
-  value = aws_subnet.public.id
-}
-
-```
-
-`terraform/modules/security_groups/main.tf`
-
-```bash
-resource "aws_security_group" "public" {
-  name        = var.public_sg_name
-  description = "Security group for public instances"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [var.internet_cidr_block]
+    tags = {
+      Name = var.vpc_name
+    }
   }
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.internet_cidr_block]
+  ```
+
+  `terraform/modules/vpc/variables.tf`
+
+  ```bash
+  variable "vpc_name" {
+    description = "Name of the VPC"
+    type        = string
+    default     = "KCVPC"
   }
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.local_ip]
+  variable "vpc_cidr_block" {
+    description = "CIDR block for the VPC"
+    type        = string
+    default     = "10.0.0.0/16"
   }
 
-  ingress {
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  ```
+
+  `terraform/modules/vpc/outputs.tf`
+
+  ```bash
+  output "vpc_id" {
+    value = aws_vpc.vpc.id
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [var.internet_cidr_block]
+  output "vpc_cidr_block" {
+    value = var.vpc_cidr_block
   }
 
-  tags = {
-    Name = "PublicSecurityGroup"
-  }
-}
+  ```
 
-```
+- SUBNET MODULE
+  `terraform/modules/subnets/main.tf`
 
-`terraform/modules/security_groups/variables.tf`
+  ```bash
+  resource "aws_subnet" "public" {
+    vpc_id                  = var.vpc_id
+    cidr_block              = var.public_cidr_block
+    availability_zone       = var.public_availability_zone
+    map_public_ip_on_launch = true
 
-```bash
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
-}
-
-variable "internet_cidr_block" {
-  description = "public internet routing IPv4 cidr block"
-  type        = string
-}
-
-variable "local_ip" {
-  description = "IP address to allow SSH access from"
-  type        = string
-}
-
-variable "public_sg_name" {
-  description = "Name of public security group"
-  type        = string
-  default     = "PublicSG"
-}
-
-```
-
-`terraform/modules/security_groups/outputs.tf`
-
-```bash
-output "public_sg_id" {
-  value = aws_security_group.public.id
-}
-
-```
-
-`terraform/modules/route_table/main.tf`
-
-```bash
-resource "aws_route_table" "public" {
-  vpc_id = var.vpc_id
-
-  route {
-    cidr_block = var.internet_cidr_block
-    gateway_id = var.internet_gateway_id
+    tags = {
+      Name = var.public_subnet_name
+    }
   }
 
-  tags = {
-    Name = var.public_route_table_name
-  }
-}
+  ```
 
-resource "aws_route_table_association" "public" {
-  subnet_id      = var.public_subnet_id
-  route_table_id = aws_route_table.public.id
-}
+  `terraform/modules/subnets/variables.tf`
 
-```
-
-`terraform/modules/route_table/variables.tf`
-
-```bash
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
-}
-
-variable "internet_cidr_block" {
-  description = "Internet routing IPv4 cidr block"
-  type        = string
-  default     = "0.0.0.0/0"
-}
-
-variable "internet_gateway_id" {
-  description = "Internet Gateway ID"
-  type        = string
-}
-
-variable "public_subnet_id" {
-  description = "Public subnet ID"
-  type        = string
-}
-
-variable "public_route_table_name" {
-  description = "Name of public route table"
-  type        = string
-  default     = "PublicRouteTable"
-}
-
-```
-
-`terraform/modules/route_table/outputs.tf`
-
-```bash
-output "public_route_table_id" {
-  value = aws_route_table.public.id
-}
-
-output "internet_cidr_block" {
-  value = var.internet_cidr_block
-}
-
-```
-
-`terraform/modules/internet_gateway/main.tf`
-
-```bash
-resource "aws_internet_gateway" "main" {
-  vpc_id = var.vpc_id
-
-  tags = {
-    Name = var.igw_name
-  }
-}
-
-```
-
-`terraform/modules/internet_gateway/variables.tf`
-
-```bash
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
-}
-
-variable "internet_cidr_block" {
-  description = "Internet routing IPv4 cidr block"
-  type        = string
-  default     = "0.0.0.0/0"
-}
-
-variable "internet_gateway_id" {
-  description = "Internet Gateway ID"
-  type        = string
-}
-
-variable "public_subnet_id" {
-  description = "Public subnet ID"
-  type        = string
-}
-
-variable "public_route_table_name" {
-  description = "Name of public route table"
-  type        = string
-  default     = "PublicRouteTable"
-}
-
-```
-
-`terraform/modules/internet_gateway/outputs.tf`
-
-```bash
-output "public_route_table_id" {
-  value = aws_route_table.public.id
-}
-
-output "internet_cidr_block" {
-  value = var.internet_cidr_block
-}
-
-```
-
-`terraform/modules/instances/main.tf`
-
-```bash
-resource "aws_instance" "public_instance" {
-  ami                         = var.ami
-  instance_type               = var.instance_type
-  subnet_id                   = var.public_subnet_id
-  vpc_security_group_ids      = [var.public_sg_id]
-  associate_public_ip_address = true
-  key_name                    = var.key_name
-
-  # user_data = file("${path.module}/scripts/install_minikube.sh")
-
-  tags = {
-    Name = var.public_instance_name
+  ```bash
+  variable "vpc_id" {
+    description = "VPC ID"
+    type        = string
   }
 
-  provisioner "file" {
-    source      = "${path.module}/scripts/install_minikube.sh"
-    destination = "/tmp/install_minikube.sh"
+  variable "public_subnet_name" {
+    description = "Name of the public subnet"
+    type        = string
+    default     = "PublicSubnet"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/install_minikube.sh",
-      "/tmp/install_minikube.sh"
-    ]
+  variable "public_cidr_block" {
+    description = "CIDR block for the public subnet"
+    type        = string
+    default     = "10.0.1.0/24"
   }
 
-  connection {
-    type        = "ssh"
-    user        = "ubuntu"
-    private_key = file(var.private_ssh_key_path)
-    host        = self.public_ip
+  variable "public_availability_zone" {
+    description = "Availability zone for the public subnet"
+    type        = string
+    default = "eu-west-1a"
   }
 
-}
+  ```
 
-```
+  `terraform/modules/subnets/outputs.tf`
 
-`terraform/modules/instances/variables.tf`
+  ```bash
+  output "public_subnet_id" {
+    value = aws_subnet.public.id
+  }
 
-```bash
-variable "ami" {
-  description = "AMI ID for the EC2 instances"
-  type        = string
-}
+  ```
 
-variable "instance_type" {
-  description = "Instance type for the EC2 instances"
-  type        = string
-}
+- SECURITY GROUP MODULE
+  `terraform/modules/security_groups/main.tf`
 
-variable "public_subnet_id" {
-  description = "Public subnet ID"
-  type        = string
-}
+  ```bash
+  resource "aws_security_group" "public" {
+    name        = var.public_sg_name
+    description = "Security group for public instances"
+    vpc_id      = var.vpc_id
 
-variable "private_ssh_key_path" {
-  description = "Path to private ssh key pair"
-  type        = string
-}
+    ingress {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = [var.internet_cidr_block]
+    }
 
-variable "public_sg_id" {
-  description = "Public security group ID"
-  type        = string
-}
+    ingress {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = [var.internet_cidr_block]
+    }
 
-variable "public_instance_name" {
-  description = "Public instance name"
-  type        = string
-  default     = "KCWebServer"
-}
+    ingress {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [var.local_ip]
+    }
 
-variable "key_name" {
-  description = "Key pair name"
-  type        = string
-}
+    ingress {
+      from_port   = 6443
+      to_port     = 6443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
 
-```
+    egress {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = [var.internet_cidr_block]
+    }
 
-`terraform/modules/instances/outputs.tf`
+    tags = {
+      Name = "PublicSecurityGroup"
+    }
+  }
 
-```bash
-output "public_instance_id" {
-  value = aws_instance.public_instance.id
-}
+  ```
 
-output "public_instance_public_ip" {
-  value = aws_instance.public_instance.public_ip
-}
+  `terraform/modules/security_groups/variables.tf`
 
-```
+  ```bash
+  variable "vpc_id" {
+    description = "VPC ID"
+    type        = string
+  }
 
-`terraform/modules/instances/scripts/install_minikube.sh`
+  variable "internet_cidr_block" {
+    description = "public internet routing IPv4 cidr block"
+    type        = string
+  }
 
-```bash
-#!/bin/bash
-# Update the system
-sudo apt-get update -y
+  variable "local_ip" {
+    description = "IP address to allow SSH access from"
+    type        = string
+  }
 
-# Install Docker
-sudo apt-get install -y docker.io
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker $USER
+  variable "public_sg_name" {
+    description = "Name of public security group"
+    type        = string
+    default     = "PublicSG"
+  }
 
-# Install conntrack package (required by Minikube)
-sudo apt-get install -y conntrack
+  ```
 
-# Install Kubectl
-curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/local/bin/kubectl
+  `terraform/modules/security_groups/outputs.tf`
 
-# Install Minikube
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-chmod +x minikube
-sudo mv minikube /usr/local/bin/
+  ```bash
+  output "public_sg_id" {
+    value = aws_security_group.public.id
+  }
 
-```
+  ```
 
-And then ran `terraform init`.
-After successful initialization, I ran `terraform plan -out tfplan.json` to plan the intended infrastructures before applying with `terraform apply "tfplan.json"`.
+- ROUTE TABLE MODULE
+  `terraform/modules/route_table/main.tf`
 
-After successful testing, I destroyed the infrastructure with the command `terraform destroy`.
+  ```bash
+  resource "aws_route_table" "public" {
+    vpc_id = var.vpc_id
+
+    route {
+      cidr_block = var.internet_cidr_block
+      gateway_id = var.internet_gateway_id
+    }
+
+    tags = {
+      Name = var.public_route_table_name
+    }
+  }
+
+  resource "aws_route_table_association" "public" {
+    subnet_id      = var.public_subnet_id
+    route_table_id = aws_route_table.public.id
+  }
+
+  ```
+
+  `terraform/modules/route_table/variables.tf`
+
+  ```bash
+  variable "vpc_id" {
+    description = "VPC ID"
+    type        = string
+  }
+
+  variable "internet_cidr_block" {
+    description = "Internet routing IPv4 cidr block"
+    type        = string
+    default     = "0.0.0.0/0"
+  }
+
+  variable "internet_gateway_id" {
+    description = "Internet Gateway ID"
+    type        = string
+  }
+
+  variable "public_subnet_id" {
+    description = "Public subnet ID"
+    type        = string
+  }
+
+  variable "public_route_table_name" {
+    description = "Name of public route table"
+    type        = string
+    default     = "PublicRouteTable"
+  }
+
+  ```
+
+  `terraform/modules/route_table/outputs.tf`
+
+  ```bash
+  output "public_route_table_id" {
+    value = aws_route_table.public.id
+  }
+
+  output "internet_cidr_block" {
+    value = var.internet_cidr_block
+  }
+
+  ```
+
+- INTERNET GATEWAY MODULE
+  `terraform/modules/internet_gateway/main.tf`
+
+  ```bash
+  resource "aws_internet_gateway" "main" {
+    vpc_id = var.vpc_id
+
+    tags = {
+      Name = var.igw_name
+    }
+  }
+
+  ```
+
+  `terraform/modules/internet_gateway/variables.tf`
+
+  ```bash
+  variable "vpc_id" {
+    description = "VPC ID"
+    type        = string
+  }
+
+  variable "internet_cidr_block" {
+    description = "Internet routing IPv4 cidr block"
+    type        = string
+    default     = "0.0.0.0/0"
+  }
+
+  variable "internet_gateway_id" {
+    description = "Internet Gateway ID"
+    type        = string
+  }
+
+  variable "public_subnet_id" {
+    description = "Public subnet ID"
+    type        = string
+  }
+
+  variable "public_route_table_name" {
+    description = "Name of public route table"
+    type        = string
+    default     = "PublicRouteTable"
+  }
+
+  ```
+
+  `terraform/modules/internet_gateway/outputs.tf`
+
+  ```bash
+  output "public_route_table_id" {
+    value = aws_route_table.public.id
+  }
+
+  output "internet_cidr_block" {
+    value = var.internet_cidr_block
+  }
+
+  ```
+
+- EC2 INSTANCE MODULE
+  `terraform/modules/instances/main.tf`
+
+  ```bash
+  resource "aws_instance" "public_instance" {
+    ami                         = var.ami
+    instance_type               = var.instance_type
+    subnet_id                   = var.public_subnet_id
+    vpc_security_group_ids      = [var.public_sg_id]
+    associate_public_ip_address = true
+    key_name                    = var.key_name
+
+    # user_data = file("${path.module}/scripts/install_minikube.sh")
+
+    tags = {
+      Name = var.public_instance_name
+    }
+
+    provisioner "file" {
+      source      = "${path.module}/scripts/install_minikube.sh"
+      destination = "/tmp/install_minikube.sh"
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "chmod +x /tmp/install_minikube.sh",
+        "/tmp/install_minikube.sh"
+      ]
+    }
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file(var.private_ssh_key_path)
+      host        = self.public_ip
+    }
+
+  }
+
+  ```
+
+  `terraform/modules/instances/variables.tf`
+  ```bash
+  variable "ami" {
+    description = "AMI ID for the EC2 instances"
+    type        = string
+  }
+
+  variable "instance_type" {
+    description = "Instance type for the EC2 instances"
+    type        = string
+  }
+
+  variable "public_subnet_id" {
+    description = "Public subnet ID"
+    type        = string
+  }
+
+  variable "private_ssh_key_path" {
+    description = "Path to private ssh key pair"
+    type        = string
+  }
+
+  variable "public_sg_id" {
+    description = "Public security group ID"
+    type        = string
+  }
+
+  variable "public_instance_name" {
+    description = "Public instance name"
+    type        = string
+    default     = "KCWebServer"
+  }
+
+  variable "key_name" {
+    description = "Key pair name"
+    type        = string
+  }
+
+  ```
+
+  `terraform/modules/instances/outputs.tf`
+  ```bash
+  output "public_instance_id" {
+    value = aws_instance.public_instance.id
+  }
+
+  output "public_instance_public_ip" {
+    value = aws_instance.public_instance.public_ip
+  }
+
+  ```
+
+- SHELL SCRIPTS
+  `terraform/modules/instances/scripts/install_minikube.sh`
+  ```bash
+  #!/bin/bash
+  # Update the system
+  sudo apt-get update -y
+
+  # Install Docker
+  sudo apt-get install -y docker.io
+  sudo systemctl enable docker
+  sudo systemctl start docker
+  sudo usermod -aG docker $USER
+
+  # Install conntrack package (required by Minikube)
+  sudo apt-get install -y conntrack
+
+  # Install Kubectl
+  curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+  chmod +x ./kubectl
+  sudo mv ./kubectl /usr/local/bin/kubectl
+
+  # Install Minikube
+  curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+  chmod +x minikube
+  sudo mv minikube /usr/local/bin/
+
+  ```
+
+- EXECUTING TERRAFORM COMMANDS
+  I ran `terraform init`.
+  After successful initialization, I ran `terraform plan -out tfplan.json` to plan the intended infrastructures before applying with `terraform apply "tfplan.json"`.
+
+  After successful testing, I destroyed the infrastructure with the command `terraform destroy`.
 
 ## STEP 6 - ACCESS THE MINIKUBE CLUSTER
-
 I ran `minikube start --driver=docker` and then change the `kubectl` context to minikube with the following command `kubectl config use-context minikube`.
 
 ## STEP 7 - UPDATE GITHUB ACTIONS WORKFLOW
-
 I created the events and actions to trigger automatic build with docker and automatic deployment on minikube running on AWS EC2 instance. This automatic event triggers when there is a push to the `main` branch of the repository.
+
 `.github/workflows/deploy.yml`
 
 ```bash
@@ -576,11 +586,6 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest
-
-      # - name: Copy Kubernetes manifest files
-      #   run: |
-      #     scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PEM_KEY }} ../../k8s/deployment.yaml ubuntu@${{ secrets.INSTANCE_PUBLIC_IP }}:/home
-      #     scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PEM_KEY }} ../../k8s/service.yaml ubuntu@${{ secrets.INSTANCE_PUBLIC_IP }}:/home
 
       - name: Deploy to Kubernetes
         env:
