@@ -24,7 +24,6 @@ git clone git@github.com:Daveamegs/kc-cicd.git
 Added python application code I created for the previous task. The app was built with flask.
 
 `app/app.py`
-
 ```bash
 from flask import Flask
 
@@ -517,8 +516,8 @@ After I created the Terraform modules.
   sudo mv minikube /usr/local/bin/
 
   ```
-
-And then ran `terraform init`.
+- EXECUTING TERRAFORM COMMANDS
+I ran `terraform init`.
 ![cicd-terraform-init](https://github.com/user-attachments/assets/10422d7d-b257-4409-8381-09e95cf182b1)
 
 After successful initialization, I ran `terraform plan -out tfplan.json` to plan the intended infrastructures before applying with `terraform apply "tfplan.json"`.
@@ -594,3 +593,4 @@ jobs:
 
 ## DOCKER IMAGE
 [Docker Image](https://hub.docker.com/repository/docker/daveamegs/kc-kube-app/general)
+
