@@ -35,6 +35,6 @@ jobs:
           echo "${SSH_PEM_KEY}" > ssh_key_pair.pem
           chmod 600 ssh_key_pair.pem
           ssh -o StrictHostKeyChecking=no -i ssh_key_pair.pem ubuntu@${INSTANCE_PUBLIC_IP} << "EOF"
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
+            kubectl apply -f ./k8s/deployment.yaml
+            kubectl apply -f ./k8s/service.yaml
           EOF
