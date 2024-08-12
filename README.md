@@ -1,10 +1,13 @@
 # AUTOMATING CI/CD PIPELINE WITH GITHUB ACTIONS: DEPLOYING TO MINIKUBE ON AWS EC2 VIA TERRAFORM
 
 ## INTRODUCTION
+
 In today's rapidly evolving software development landscape, continuous integration and continuous deployment (CI/CD) have become essential practices for delivering reliable, high-quality applications at speed. Leveraging modern tools and platforms, such as GitHub Actions and Terraform, allows developers to automate their deployment pipelines efficiently. This task involves setting up a CI/CD pipeline with GitHub Actions to automatically deploy code from a GitHub repository to a Minikube cluster running on an EC2 instance, which is provisioned using Terraform. This approach not only streamlines the deployment process but also ensures consistency and scalability in managing infrastructure and application deployments.
 
 ## PREREQUISITE
+
 Below are the things you need to have installed and available already.
+
 - Terraform CLI
 - AWSCLI
 - AWS Account (Configured locally)
@@ -13,11 +16,14 @@ Below are the things you need to have installed and available already.
 - Kubectl
 
 ## STEP 1 - CREATE GITHUB REPOSITORY
-Logged in to github and created a repository, called it kc-cicd and cloned the repo locally unto my workspace. 
+
+Logged in to github and created a repository, called it kc-cicd and cloned the repo locally unto my workspace.
 
 ## STEP 2 - ADD APPLICATION CODE
+
 Added python application code I created for the previous task. The app was built with flask.
 `app/app.py`
+
 ```bash
 from flask import Flask
 
@@ -37,8 +43,10 @@ if __name__ == "__main__":
 ```
 
 ## STEP 3 - CREATE KUBERNETES MANIFESTS
+
 I created the kubernetes manifest files, `deployment.yaml` and `service.yaml`.
 `k8s/deployment.yaml`
+
 ```bash
 
 apiVersion: apps/v1
@@ -71,6 +79,7 @@ spec:
 ```
 
 `k8s/service.yaml`
+
 ```bash
 apiVersion: v1
 kind: Service
@@ -88,13 +97,15 @@ spec:
 ```
 
 ## STEP 4 - CREATE GITHUB ACTIONS WORKFLOWS
+
 Created an empty github actions workflows manifest file called `deploy.yml`.
 
-
 ## STEP 5 - CREATE TERRAFORM MODULES
+
 After I created the Terraform modules.
 
 `terraform/modules/vpc/main.tf`
+
 ```bash
 resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr_block
@@ -107,6 +118,7 @@ resource "aws_vpc" "vpc" {
 ```
 
 `terraform/modules/vpc/variables.tf`
+
 ```bash
 variable "vpc_name" {
   description = "Name of the VPC"
@@ -123,6 +135,7 @@ variable "vpc_cidr_block" {
 ```
 
 `terraform/modules/vpc/outputs.tf`
+
 ```bash
 output "vpc_id" {
   value = aws_vpc.vpc.id
@@ -135,6 +148,7 @@ output "vpc_cidr_block" {
 ```
 
 `terraform/modules/subnets/main.tf`
+
 ```bash
 resource "aws_subnet" "public" {
   vpc_id                  = var.vpc_id
@@ -150,6 +164,7 @@ resource "aws_subnet" "public" {
 ```
 
 `terraform/modules/subnets/variables.tf`
+
 ```bash
 variable "vpc_id" {
   description = "VPC ID"
@@ -177,6 +192,7 @@ variable "public_availability_zone" {
 ```
 
 `terraform/modules/subnets/outputs.tf`
+
 ```bash
 output "public_subnet_id" {
   value = aws_subnet.public.id
@@ -185,6 +201,7 @@ output "public_subnet_id" {
 ```
 
 `terraform/modules/security_groups/main.tf`
+
 ```bash
 resource "aws_security_group" "public" {
   name        = var.public_sg_name
@@ -234,6 +251,7 @@ resource "aws_security_group" "public" {
 ```
 
 `terraform/modules/security_groups/variables.tf`
+
 ```bash
 variable "vpc_id" {
   description = "VPC ID"
@@ -259,6 +277,7 @@ variable "public_sg_name" {
 ```
 
 `terraform/modules/security_groups/outputs.tf`
+
 ```bash
 output "public_sg_id" {
   value = aws_security_group.public.id
@@ -267,6 +286,7 @@ output "public_sg_id" {
 ```
 
 `terraform/modules/route_table/main.tf`
+
 ```bash
 resource "aws_route_table" "public" {
   vpc_id = var.vpc_id
@@ -289,6 +309,7 @@ resource "aws_route_table_association" "public" {
 ```
 
 `terraform/modules/route_table/variables.tf`
+
 ```bash
 variable "vpc_id" {
   description = "VPC ID"
@@ -320,6 +341,7 @@ variable "public_route_table_name" {
 ```
 
 `terraform/modules/route_table/outputs.tf`
+
 ```bash
 output "public_route_table_id" {
   value = aws_route_table.public.id
@@ -332,6 +354,7 @@ output "internet_cidr_block" {
 ```
 
 `terraform/modules/internet_gateway/main.tf`
+
 ```bash
 resource "aws_internet_gateway" "main" {
   vpc_id = var.vpc_id
@@ -344,6 +367,7 @@ resource "aws_internet_gateway" "main" {
 ```
 
 `terraform/modules/internet_gateway/variables.tf`
+
 ```bash
 variable "vpc_id" {
   description = "VPC ID"
@@ -375,6 +399,7 @@ variable "public_route_table_name" {
 ```
 
 `terraform/modules/internet_gateway/outputs.tf`
+
 ```bash
 output "public_route_table_id" {
   value = aws_route_table.public.id
@@ -387,6 +412,7 @@ output "internet_cidr_block" {
 ```
 
 `terraform/modules/instances/main.tf`
+
 ```bash
 resource "aws_instance" "public_instance" {
   ami                         = var.ami
@@ -426,6 +452,7 @@ resource "aws_instance" "public_instance" {
 ```
 
 `terraform/modules/instances/variables.tf`
+
 ```bash
 variable "ami" {
   description = "AMI ID for the EC2 instances"
@@ -466,6 +493,7 @@ variable "key_name" {
 ```
 
 `terraform/modules/instances/outputs.tf`
+
 ```bash
 output "public_instance_id" {
   value = aws_instance.public_instance.id
@@ -478,6 +506,7 @@ output "public_instance_public_ip" {
 ```
 
 `terraform/modules/instances/scripts/install_minikube.sh`
+
 ```bash
 #!/bin/bash
 # Update the system
@@ -506,9 +535,57 @@ sudo mv minikube /usr/local/bin/
 # sudo minikube start --driver=docker --cpus=1 --memory=1024
 ```
 
-
 ## STEP 6 - ACCESS THE MINIKUBE CLUSTER
-
 
 ## STEP 7 - UPDATE GITHUB ACTIONS WORKFLOW
 
+`.github/workflows/deploy.yml`
+
+```bash
+name: KC CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/kc-kube-app:latest
+
+      # - name: Copy Kubernetes manifest files
+      #   run: |
+      #     scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PEM_KEY }} ../../k8s/deployment.yaml ubuntu@${{ secrets.INSTANCE_PUBLIC_IP }}:/home
+      #     scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PEM_KEY }} ../../k8s/service.yaml ubuntu@${{ secrets.INSTANCE_PUBLIC_IP }}:/home
+
+      - name: Deploy to Kubernetes
+        env:
+          INSTANCE_PUBLIC_IP: ${{ secrets.INSTANCE_PUBLIC_IP }}
+          SSH_PEM_KEY: ${{ secrets.SSH_PEM_KEY }}
+        run: |
+          echo "${SSH_PEM_KEY}" > ssh_key_pair.pem
+          chmod 600 ssh_key_pair.pem
+          ssh -o StrictHostKeyChecking=no -i ssh_key_pair.pem ubuntu@${INSTANCE_PUBLIC_IP} << "EOF"
+            kubectl apply -f k8s/deployment.yaml
+            kubectl apply -f k8s/service.yaml
+          EOF
+
+```

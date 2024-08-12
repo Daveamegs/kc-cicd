@@ -23,7 +23,7 @@ chmod +x minikube
 sudo mv minikube /usr/local/bin/
 
 # Start Minikube
-sudo minikube start --driver=docker --cpus=2 --memory=2048
+# minikube start
 
 
 #________________________________________________________________________

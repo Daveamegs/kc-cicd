@@ -24,11 +24,19 @@ resource "aws_instance" "public_instance" {
     ]
   }
 
+  provisioner "file" {
+    source      = "/home/david/Documents/DevOps/kodecamp/kodecamp4/github-clone/kc-cicd/k8s"
+    destination = "/home/ubuntu/"
+  }
+
   connection {
     type        = "ssh"
     user        = "ubuntu"
     private_key = file(var.private_ssh_key_path)
     host        = self.public_ip
   }
+
+
+
 
 }
