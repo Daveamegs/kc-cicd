@@ -608,4 +608,4 @@ jobs:
 ![cicd-handling-conn](https://github.com/user-attachments/assets/c7f1f9c5-9f8c-4bc7-8408-88219353a793)
 
 ## DOCKER IMAGE
-![Docker Image](https://hub.docker.com/repository/docker/daveamegs/kc-kube-app/general)
+[Docker Image](https://hub.docker.com/repository/docker/daveamegs/kc-kube-app/general)
