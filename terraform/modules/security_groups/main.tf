@@ -24,6 +24,13 @@ resource "aws_security_group" "public" {
     cidr_blocks = [var.local_ip]
   }
 
+  ingress {
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

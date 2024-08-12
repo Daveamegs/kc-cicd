@@ -23,14 +23,7 @@ chmod +x minikube
 sudo mv minikube /usr/local/bin/
 
 # Start Minikube
-sudo minikube start --driver=none
-
-# Ensure Minikube uses Docker as the driver
-sudo minikube config set driver none
-
-# Verify installation
-minikube status
-kubectl get nodes
+sudo minikube start --driver=docker --cpus=2 --memory=2048
 
 
 #________________________________________________________________________
@@ -59,13 +52,6 @@ kubectl get nodes
 # sudo mv minikube /usr/local/bin/
 
 # # Start Minikube
-# minikube start --driver=none
-
-# # Ensure Minikube uses Docker as the driver
-# minikube config set driver none
-
-# # Verify installation
-# minikube status
-# kubectl get nodes
+# minikube start --driver=docker
 
 

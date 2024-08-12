@@ -43,12 +43,12 @@ module "security_groups" {
   local_ip            = var.local_ip
 }
 
-module "nacls" {
-  source           = "./modules/nacls"
-  vpc_id           = module.vpc.vpc_id
-  public_subnet_id = module.subnet.public_subnet_id
-  local_ip         = var.local_ip
-}
+# module "nacls" {
+#   source           = "./modules/nacls"
+#   vpc_id           = module.vpc.vpc_id
+#   public_subnet_id = module.subnet.public_subnet_id
+#   local_ip         = var.local_ip
+# }
 
 module "instances" {
   source               = "./modules/instances"

@@ -18,5 +18,5 @@ variable "public_cidr_block" {
 variable "public_availability_zone" {
   description = "Availability zone for the public subnet"
   type        = string
-  default = "eu-west-1c"
+  default = "eu-west-1a"
 }
