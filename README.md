@@ -1,11 +1,9 @@
 # AUTOMATING CI/CD PIPELINE WITH GITHUB ACTIONS: DEPLOYING TO MINIKUBE ON AWS EC2 VIA TERRAFORM
 
 ## INTRODUCTION
-
 In today's rapidly evolving software development landscape, continuous integration and continuous deployment (CI/CD) have become essential practices for delivering reliable, high-quality applications at speed. Leveraging modern tools and platforms, such as GitHub Actions and Terraform, allows developers to automate their deployment pipelines efficiently. This task involves setting up a CI/CD pipeline with GitHub Actions to automatically deploy code from a GitHub repository to a Minikube cluster running on an EC2 instance, which is provisioned using Terraform. This approach not only streamlines the deployment process but also ensures consistency and scalability in managing infrastructure and application deployments.
 
 ## PREREQUISITE
-
 Below are the things you need to have installed and available already.
 
 - Terraform CLI
@@ -16,15 +14,13 @@ Below are the things you need to have installed and available already.
 - Kubectl
 
 ## STEP 1 - CREATE GITHUB REPOSITORY
-
 Logged in to github and created a repository, named it kc-cicd and cloned the repo locally unto my workspace using ssh.
 
 ```bash
-git clone
+git clone git@github.com:Daveamegs/kc-cicd.git
 ```
 
 ## STEP 2 - ADD APPLICATION CODE
-
 Added python application code I created for the previous task. The app was built with flask.
 
 `app/app.py`
@@ -48,11 +44,9 @@ if __name__ == "__main__":
 ```
 
 ## STEP 3 - CREATE KUBERNETES MANIFESTS
-
 I created the kubernetes manifest files, `deployment.yaml` and `service.yaml`.
 
 `k8s/deployment.yaml`
-
 ```bash
 
 apiVersion: apps/v1
@@ -85,7 +79,6 @@ spec:
 ```
 
 `k8s/service.yaml`
-
 ```bash
 apiVersion: v1
 kind: Service
@@ -103,16 +96,13 @@ spec:
 ```
 
 ## STEP 4 - CREATE GITHUB ACTIONS WORKFLOWS
-
 Created an empty github actions workflows manifest file called `deploy.yml`.
 
 ## STEP 5 - CREATE TERRAFORM MODULES
-
 After I created the Terraform modules.
 
 - VPC MODULE
   `terraform/modules/vpc/main.tf`
-
   ```bash
   resource "aws_vpc" "vpc" {
     cidr_block = var.vpc_cidr_block
@@ -125,7 +115,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/vpc/variables.tf`
-
   ```bash
   variable "vpc_name" {
     description = "Name of the VPC"
@@ -142,7 +131,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/vpc/outputs.tf`
-
   ```bash
   output "vpc_id" {
     value = aws_vpc.vpc.id
@@ -156,7 +144,6 @@ After I created the Terraform modules.
 
 - SUBNET MODULE
   `terraform/modules/subnets/main.tf`
-
   ```bash
   resource "aws_subnet" "public" {
     vpc_id                  = var.vpc_id
@@ -172,7 +159,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/subnets/variables.tf`
-
   ```bash
   variable "vpc_id" {
     description = "VPC ID"
@@ -200,7 +186,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/subnets/outputs.tf`
-
   ```bash
   output "public_subnet_id" {
     value = aws_subnet.public.id
@@ -210,7 +195,6 @@ After I created the Terraform modules.
 
 - SECURITY GROUP MODULE
   `terraform/modules/security_groups/main.tf`
-
   ```bash
   resource "aws_security_group" "public" {
     name        = var.public_sg_name
@@ -260,7 +244,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/security_groups/variables.tf`
-
   ```bash
   variable "vpc_id" {
     description = "VPC ID"
@@ -286,7 +269,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/security_groups/outputs.tf`
-
   ```bash
   output "public_sg_id" {
     value = aws_security_group.public.id
@@ -296,7 +278,6 @@ After I created the Terraform modules.
 
 - ROUTE TABLE MODULE
   `terraform/modules/route_table/main.tf`
-
   ```bash
   resource "aws_route_table" "public" {
     vpc_id = var.vpc_id
@@ -319,7 +300,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/route_table/variables.tf`
-
   ```bash
   variable "vpc_id" {
     description = "VPC ID"
@@ -351,7 +331,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/route_table/outputs.tf`
-
   ```bash
   output "public_route_table_id" {
     value = aws_route_table.public.id
@@ -365,7 +344,6 @@ After I created the Terraform modules.
 
 - INTERNET GATEWAY MODULE
   `terraform/modules/internet_gateway/main.tf`
-
   ```bash
   resource "aws_internet_gateway" "main" {
     vpc_id = var.vpc_id
@@ -378,7 +356,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/internet_gateway/variables.tf`
-
   ```bash
   variable "vpc_id" {
     description = "VPC ID"
@@ -410,7 +387,6 @@ After I created the Terraform modules.
   ```
 
   `terraform/modules/internet_gateway/outputs.tf`
-
   ```bash
   output "public_route_table_id" {
     value = aws_route_table.public.id
@@ -424,7 +400,6 @@ After I created the Terraform modules.
 
 - EC2 INSTANCE MODULE
   `terraform/modules/instances/main.tf`
-
   ```bash
   resource "aws_instance" "public_instance" {
     ami                         = var.ami
