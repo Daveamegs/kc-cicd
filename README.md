@@ -518,20 +518,25 @@ After I created the Terraform modules.
 
   ```
 
-- EXECUTING TERRAFORM COMMANDS
-  I ran `terraform init`.
-  After successful initialization, I ran `terraform plan -out tfplan.json` to plan the intended infrastructures before applying with `terraform apply "tfplan.json"`.
+And then ran `terraform init`.
+![cicd-terraform-init](https://github.com/user-attachments/assets/10422d7d-b257-4409-8381-09e95cf182b1)
 
-  After successful testing, I destroyed the infrastructure with the command `terraform destroy`.
+After successful initialization, I ran `terraform plan -out tfplan.json` to plan the intended infrastructures before applying with `terraform apply "tfplan.json"`.
+![cicd-terraform-apply-2](https://github.com/user-attachments/assets/8aa81052-6259-407e-a30b-78e7bc434aa0)
+
+After successful testing, I destroyed the infrastructure with the command `terraform destroy`.
+![cicd-terraform-destroy](https://github.com/user-attachments/assets/a17d5b7c-0b23-4164-a9ee-8bf0f6cc8dd0)
+
 
 ## STEP 6 - ACCESS THE MINIKUBE CLUSTER
 I ran `minikube start --driver=docker` and then change the `kubectl` context to minikube with the following command `kubectl config use-context minikube`.
+![cicd-minikube-started](https://github.com/user-attachments/assets/550e6689-9363-418c-b10d-eec3f7589276)
 
 ## STEP 7 - UPDATE GITHUB ACTIONS WORKFLOW
 I created the events and actions to trigger automatic build with docker and automatic deployment on minikube running on AWS EC2 instance. This automatic event triggers when there is a push to the `main` branch of the repository.
 
-`.github/workflows/deploy.yml`
 
+`.github/workflows/deploy.yml`
 ```bash
 name: KC CI/CD Pipeline
 
@@ -575,3 +580,17 @@ jobs:
           EOF
 
 ```
+## BUILDS
+![cicd-github-actions-passed](https://github.com/user-attachments/assets/bd829644-551a-49e8-8617-82cd44d7f855)
+
+
+![cicd-gthb-actions-passed-complete](https://github.com/user-attachments/assets/797d1438-7cb2-4b14-b510-5faa725cfe00)
+
+## CONNECTED TO INSTANCE (SSH)
+![cicd-ec2-ssh-connect](https://github.com/user-attachments/assets/90d77c81-f625-4df9-9aa6-82b851fb00df)
+
+## PORT FORWARDING
+![cicd-handling-conn](https://github.com/user-attachments/assets/c7f1f9c5-9f8c-4bc7-8408-88219353a793)
+
+## DOCKER IMAGE
+[Docker Image](https://hub.docker.com/repository/docker/daveamegs/kc-kube-app/general)
