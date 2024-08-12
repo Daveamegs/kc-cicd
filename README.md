@@ -532,16 +532,19 @@ chmod +x minikube
 sudo mv minikube /usr/local/bin/
 
 ```
+
 And then ran `terraform init`.
 After successful initialization, I ran `terraform plan -out tfplan.json` to plan the intended infrastructures before applying with `terraform apply "tfplan.json"`.
 
+After successful testing, I destroyed the infrastructure with the command `terraform destroy`.
 
 ## STEP 6 - ACCESS THE MINIKUBE CLUSTER
+
 I ran `minikube start --driver=docker` and then change the `kubectl` context to minikube with the following command `kubectl config use-context minikube`.
 
-
 ## STEP 7 - UPDATE GITHUB ACTIONS WORKFLOW
-I created the events and actions to trigger automatic build with docker and automatic deployment on minikube running on AWS EC2 instance. This automatic event triggers when there is a push to the `main` branch of the repository. 
+
+I created the events and actions to trigger automatic build with docker and automatic deployment on minikube running on AWS EC2 instance. This automatic event triggers when there is a push to the `main` branch of the repository.
 `.github/workflows/deploy.yml`
 
 ```bash
